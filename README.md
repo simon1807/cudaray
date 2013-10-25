@@ -1,2 +1,4 @@
 cudaray
 =======
+
+Raytracer pod CUDĘ.
