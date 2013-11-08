@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "mathlib.h"
+
 #pragma pack(push)
 #pragma pack(1)
 
@@ -32,9 +34,13 @@ int main()
 	header.height=200;
 	header.pix_depth=32; // Bits/pixel
 
+	t_sphere sphere;
+    vec3_set( sphere.position, 100.0f, 75.0, 0.0f );
+    sphere.radius = 50.0f;
+
 	uint32_t img[ 200 ][ 200 ];
 	memset( &img, 0, sizeof( img ) );
-	cuda_main(200, 200, (uint32_t *)img);
+	cuda_main( 200, 200, (uint32_t *)img, &sphere, 1 );
 
 	FILE * fp = fopen( "obrazek.tga", "wb" );
 
