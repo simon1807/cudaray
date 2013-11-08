@@ -125,6 +125,7 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
 
     t_vec3 light;
     vec3_set( light, 10.0f, 75.0f, 1.0f );
+    vec3_sub( light, intersect_point );
 
     t_vec3 normal;
     vec3_dup( normal, intersect_point );
