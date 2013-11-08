@@ -13,6 +13,11 @@ LDFLAGS += `OcelotConfig -l`
 BUILDIR = $(shell dirname $(OUTPUT))
 OBJS = $(patsubst %,$(BUILDIR)/%,$(_OBJS))
 
+ifeq ($(ENABLE_GHETTO_CUDA), 1)
+    NVCC = $(CXX)
+    NVCFLAGS = $(CFLAGS) -x c++
+endif
+
 $(OUTPUT): $(OBJS)
 	@echo "[LD] `basename $@`"
 	@$(CXX) $(OBJS) $(CFLAGS) $(LDFLAGS) -o $(OUTPUT)

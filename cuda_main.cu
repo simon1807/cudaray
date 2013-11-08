@@ -4,6 +4,44 @@
 #include "cudaray.h"
 #include "mathlib.h"
 
+#ifndef __CUDACC__ /* Ghetto CUDA. */
+    #define __device__
+    #define __global__
+
+    #include <stdlib.h>
+    #include <string.h>
+
+    static void cudaMalloc( void * p, size_t size )
+    {
+        void ** out = (void **)p;
+        *out = malloc( size );
+    }
+
+    static void cudaMemset( void * ptr, int x, size_t size )
+    {
+        memset( ptr, x, size );
+    }
+
+    static void cudaMemcpy( void * out, const void * in, size_t size, int direction )
+    {
+        memcpy( out, in, size );
+    }
+
+    static void cudaFree( void * ptr )
+    {
+        free( ptr );
+    }
+
+    #define cudaMemcpyHostToDevice 0
+    #define cudaMemcpyDeviceToHost 0
+
+    static struct
+    {
+        int x;
+        int y;
+    } blockIdx;
+#endif
+
 struct t_ray
 {
     t_vec3 start;
@@ -114,10 +152,22 @@ void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, 
     cudaMemset( cuda_img, 0, size );
     cudaMemcpy( cuda_sphere_array, sphere_array, sphere_count * sizeof( t_sphere ), cudaMemcpyHostToDevice );
 
-    dim3 dimBlock( 1, 1 );
-	dim3 dimGrid( width, height );
+    #ifdef __CUDACC__
+        dim3 dimBlock( 1, 1 );
+        dim3 dimGrid( width, height );
 	
-	cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count );
+        cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count );
+    #else
+        for( int y = 0; y < height; ++y )
+        {
+            for( int x = 0; x < width; ++x )
+            {
+                blockIdx.x = x;
+                blockIdx.y = y;
+                cuda_run( cuda_img, width, cuda_sphere_array, sphere_count );
+            }
+        }
+    #endif
 	
 	cudaMemcpy( img, cuda_img, size, cudaMemcpyDeviceToHost ); 
 	cudaFree( cuda_img );
