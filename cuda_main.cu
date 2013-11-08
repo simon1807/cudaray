@@ -96,6 +96,8 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
     vec3_normalize( normal );
 
     float intensity = vec3_dot( normal, light );
+	if( intensity < 0 )
+	    intensity = 0;
 
     int r = 255 * intensity;
 	img[ y * width + x ] = 0xff000000 | (r << 16);
