@@ -39,9 +39,13 @@ int main()
     vec3_set( sphere.color, 1.0f, 1.0f, 1.0f );
     sphere.radius = 50.0f;
 
+    t_light light;
+    vec3_set( light.position, 10.0f, 75.0f, 1.0f );
+    vec3_set( light.color, 1.0f, 1.0f, 1.0f );
+
 	uint32_t img[ 200 ][ 200 ];
 	memset( &img, 0, sizeof( img ) );
-	cuda_main( 200, 200, (uint32_t *)img, &sphere, 1 );
+	cuda_main( 200, 200, (uint32_t *)img, &sphere, 1, &light, 1 );
 
 	FILE * fp = fopen( "obrazek.tga", "wb" );
 
