@@ -17,6 +17,7 @@ int main( int argc, char * argv[] )
 
     t_sphere sphere;
     vec3_set( sphere.position, 100.0f, 75.0, 0.0f );
+    vec3_set( sphere.color, 1.0f, 1.0f, 1.0f );
     sphere.radius = 50.0f;
 
     uint32_t img[ width ][ height ];
