@@ -11,12 +11,19 @@ CFLAGS = -DDEBUG -D_BSD_SOURCE -Wall -Wextra -Wno-unused-parameter -pipe -g3 -O0
 NVCFLAGS = -arch=sm_20 -O0
 LDFLAGS += `OcelotConfig -l`
 BUILDIR = $(shell dirname $(OUTPUT))
-OBJS = $(patsubst %,$(BUILDIR)/%,$(_OBJS))
+
+ifeq ($(ENABLE_SDL), 1)
+    CFLAGS += `sdl2-config --cflags`
+    LDFLAGS += `sdl2-config --libs`
+    _OBJS = sdl_main.o cuda_main.o
+endif
 
 ifeq ($(ENABLE_GHETTO_CUDA), 1)
     NVCC = $(CXX)
     NVCFLAGS = $(CFLAGS) -x c++
 endif
+
+OBJS = $(patsubst %,$(BUILDIR)/%,$(_OBJS))
 
 $(OUTPUT): $(OBJS)
 	@echo "[LD] `basename $@`"
