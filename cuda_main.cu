@@ -61,10 +61,6 @@ static int sphere_intersect( t_ray ray, t_sphere * sphere, t_vec3 out, float * o
     float yo = ray.start[1];
     float zo = ray.start[2];
 
-    float x0 = xo;
-    float y0 = yo;
-    float z0 = zo;
-
     float xs = sphere->position[0];
     float ys = sphere->position[1];
     float zs = sphere->position[2];
