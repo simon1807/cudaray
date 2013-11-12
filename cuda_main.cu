@@ -92,7 +92,7 @@ static int sphere_intersect( t_ray ray, t_sphere * sphere, t_vec3 out, float * o
 }
 
 __global__ 
-void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_count )
+void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
 {
 	int x = blockIdx.x;
 	int y = blockIdx.y;
@@ -123,52 +123,60 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
     if( best_sphere == NULL )
         return;
 
-    t_vec3 light;
-    vec3_set( light, 10.0f, 75.0f, 1.0f );
-    vec3_sub( light, intersect_point );
+    for( int n_light = 0; n_light < light_count; ++n_light )
+    {
+        t_light * light = &light_array[n_light];
 
-    t_vec3 normal;
-    vec3_dup( normal, intersect_point );
-    vec3_sub( normal, best_sphere->position );
+        t_vec3 light_vector;
+        vec3_dup( light_vector, light->position );
+        vec3_sub( light_vector, intersect_point );
 
-    vec3_normalize( light );
-    vec3_normalize( normal );
+        t_vec3 normal;
+        vec3_dup( normal, intersect_point );
+        vec3_sub( normal, best_sphere->position );
 
-    float intensity = vec3_dot( normal, light );
-	if( intensity < 0 )
-	    intensity = 0;
+        vec3_normalize( light_vector );
+        vec3_normalize( normal );
 
-    t_vec3 light_color;
-    vec3_set( light_color, 1.0f, 1.0f, 1.0f );
-    vec3_scale( light_color, intensity );
+        float intensity = vec3_dot( normal, light_vector );
+        if( intensity < 0 )
+            intensity = 0;
 
-    t_vec3 color;
-    vec3_dup( color, best_sphere->color );
-    vec3_scalar_mul( color, light_color );
-    vec3_clamp( color, 0.0f, 1.0f );
+        t_vec3 light_color;
+        vec3_dup( light_color, light->color );
+        vec3_scale( light_color, intensity );
 
-    int r = 255 * color[0];
-    int g = 255 * color[1];
-    int b = 255 * color[2];
-	img[ y * width + x ] = 0xff000000 | (r << 16) | (g << 8) | (b);
+        t_vec3 color;
+        vec3_dup( color, best_sphere->color );
+        vec3_scalar_mul( color, light_color );
+        vec3_clamp( color, 0.0f, 1.0f );
+
+        int r = 255 * color[0];
+        int g = 255 * color[1];
+        int b = 255 * color[2];
+        img[ y * width + x ] += 0xff000000 | (r << 16) | (g << 8) | (b);
+    }
 }
  
-void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count )
+void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
 {
     uint32_t * cuda_img;
     t_sphere * cuda_sphere_array;
+    t_light * cuda_light_array;
     const int size = width * height * sizeof( uint32_t );
     
     cudaMalloc( &cuda_img, size );
     cudaMalloc( &cuda_sphere_array, sphere_count * sizeof( t_sphere ) );
+    cudaMalloc( &cuda_light_array, light_count * sizeof( t_light ) );
     cudaMemset( cuda_img, 0, size );
     cudaMemcpy( cuda_sphere_array, sphere_array, sphere_count * sizeof( t_sphere ), cudaMemcpyHostToDevice );
+    cudaMemcpy( cuda_light_array, light_array, light_count * sizeof( t_light ), cudaMemcpyHostToDevice );
 
     #ifdef __CUDACC__
         dim3 dimBlock( 1, 1 );
         dim3 dimGrid( width, height );
 	
-        cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count );
+        cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count, cuda_light_array, light_count );
     #else
         for( int y = 0; y < height; ++y )
         {
@@ -176,7 +184,7 @@ void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, 
             {
                 blockIdx.x = x;
                 blockIdx.y = y;
-                cuda_run( cuda_img, width, cuda_sphere_array, sphere_count );
+                cuda_run( cuda_img, width, cuda_sphere_array, sphere_count, cuda_light_array, light_count );
             }
         }
     #endif
@@ -184,4 +192,5 @@ void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, 
 	cudaMemcpy( img, cuda_img, size, cudaMemcpyDeviceToHost ); 
 	cudaFree( cuda_img );
     cudaFree( cuda_sphere_array );
+    cudaFree( cuda_light_array );
 }
