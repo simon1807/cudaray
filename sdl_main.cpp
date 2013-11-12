@@ -20,6 +20,10 @@ int main( int argc, char * argv[] )
     vec3_set( sphere.color, 1.0f, 1.0f, 1.0f );
     sphere.radius = 50.0f;
 
+    t_light light;
+    vec3_set( light.position, 10.0f, 75.0f, 1.0f );
+    vec3_set( light.color, 1.0f, 1.0f, 1.0f );
+
     uint32_t img[ width ][ height ];
     memset( &img, 0, sizeof( img ) );
 
@@ -37,7 +41,7 @@ int main( int argc, char * argv[] )
             }
         }
 
-        cuda_main( width, height, (uint32_t *)img, &sphere, 1 );
+        cuda_main( width, height, (uint32_t *)img, &sphere, 1, &light, 1 );
 
         SDL_UpdateTexture( texture, NULL, img, width * sizeof( uint32_t ) );
         SDL_RenderClear( renderer );
