@@ -123,6 +123,9 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
     if( best_sphere == NULL )
         return;
 
+    t_vec3 fragment_color;
+    vec3_zero( fragment_color );
+
     for( int n_light = 0; n_light < light_count; ++n_light )
     {
         t_light * light = &light_array[n_light];
@@ -151,11 +154,14 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
         vec3_scalar_mul( color, light_color );
         vec3_clamp( color, 0.0f, 1.0f );
 
-        int r = 255 * color[0];
-        int g = 255 * color[1];
-        int b = 255 * color[2];
-        img[ y * width + x ] += 0xff000000 | (r << 16) | (g << 8) | (b);
+        vec3_add( fragment_color, color );
     }
+
+    vec3_clamp( fragment_color, 0.0f, 1.0f );
+    int r = 255 * fragment_color[0];
+    int g = 255 * fragment_color[1];
+    int b = 255 * fragment_color[2];
+    img[ y * width + x ] += 0xff000000 | (r << 16) | (g << 8) | (b);
 }
  
 void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
