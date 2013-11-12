@@ -35,6 +35,9 @@ int main( int argc, char * argv[] )
     memset( &img, 0, sizeof( img ) );
 
     float t = 0.0f;
+    float speed = 0.3f;
+    int acceleration = 0;;
+
     for( ;; )
     {
         SDL_Event event;
@@ -43,8 +46,33 @@ int main( int argc, char * argv[] )
             switch( event.type )
             {
                 case SDL_KEYUP:
-                    if( event.key.keysym.sym == SDLK_ESCAPE )
-                        return 0;
+                    switch( event.key.keysym.sym )
+                    {
+                        case SDLK_ESCAPE:
+                            return 0;
+                        case SDLK_RIGHT:
+                            if( !event.key.repeat )
+                                acceleration -= 1;
+                            break;
+                        case SDLK_LEFT:
+                            if( !event.key.repeat )
+                                acceleration += 1;
+                            break;
+                    }
+                    break;
+
+                case SDL_KEYDOWN:
+                    switch( event.key.keysym.sym )
+                    {
+                        case SDLK_RIGHT:
+                            if( !event.key.repeat )
+                                acceleration += 1;
+                            break;
+                        case SDLK_LEFT:
+                            if( !event.key.repeat )
+                                acceleration -= 1;
+                            break;
+                    }
                     break;
             }
         }
@@ -72,7 +100,8 @@ int main( int argc, char * argv[] )
         SDL_RenderPresent( renderer );
         SDL_Delay( 16 );
 
-        t += 0.3;
+        t += speed;
+        speed += acceleration * 0.01f;
     }
 
     SDL_DestroyWindow( window );
