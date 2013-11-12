@@ -143,7 +143,7 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
 
         float intensity = vec3_dot( normal, light_vector );
         if( intensity < 0 )
-            intensity = 0;
+            continue;
 
         t_vec3 light_color;
         vec3_dup( light_color, light->color );
