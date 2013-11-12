@@ -138,8 +138,19 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
 	if( intensity < 0 )
 	    intensity = 0;
 
-    int r = 255 * intensity;
-	img[ y * width + x ] = 0xff000000 | (r << 16);
+    t_vec3 light_color;
+    vec3_set( light_color, 1.0f, 1.0f, 1.0f );
+    vec3_scale( light_color, intensity );
+
+    t_vec3 color;
+    vec3_dup( color, best_sphere->color );
+    vec3_scalar_mul( color, light_color );
+    vec3_clamp( color, 0.0f, 1.0f );
+
+    int r = 255 * color[0];
+    int g = 255 * color[1];
+    int b = 255 * color[2];
+	img[ y * width + x ] = 0xff000000 | (r << 16) | (g << 8) | (b);
 }
  
 void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count )
