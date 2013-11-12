@@ -74,4 +74,23 @@ PREFIX static inline void vec3_normalize( t_vec3 self )
     vec3_scale( self, k );
 }
 
+PREFIX static inline void vec3_clamp( t_vec3 self, float min, float max )
+{
+    self[0] = (self[0] < min) ? (min) : (self[0]);
+    self[0] = (self[0] > max) ? (max) : (self[0]);
+
+    self[1] = (self[1] < min) ? (min) : (self[1]);
+    self[1] = (self[1] > max) ? (max) : (self[1]);
+
+    self[2] = (self[2] < min) ? (min) : (self[2]);
+    self[2] = (self[2] > max) ? (max) : (self[2]);
+}
+
+PREFIX static inline void vec3_scalar_mul( t_vec3 self, t_vec3 in )
+{
+    self[0] *= in[0];
+    self[1] *= in[1];
+    self[2] *= in[2];
+}
+
 #endif
