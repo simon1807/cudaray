@@ -8,6 +8,7 @@
 #endif
 
 #include <math.h>
+#include <string.h>
 
 typedef float t_vec3[3];
 
@@ -17,6 +18,11 @@ struct t_sphere
     float radius;
     t_vec3 color;
 };
+
+PREFIX static inline void vec3_zero( t_vec3 out )
+{
+    memset( out, 0, sizeof( t_vec3 ) );
+}
 
 PREFIX static inline void vec3_set( t_vec3 out, float x, float y, float z )
 {
