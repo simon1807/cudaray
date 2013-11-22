@@ -55,7 +55,7 @@ static inline float pow2( float x )
 }
 
 __device__
-static int sphere_intersect( t_ray ray, t_sphere * sphere, t_vec3 out, float * out_distance )
+static int sphere_intersect( const t_ray ray, const t_sphere * sphere, t_vec3 out, float * out_distance )
 {
     float xo = ray.start[0];
     float yo = ray.start[1];
@@ -94,17 +94,18 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
 	int y = blockIdx.y;
 
     t_ray ray;
-    vec3_set( ray.start, x, y, -100.0f );
+    vec3_set( ray.start, x, y, 1000.0f );
     vec3_set( ray.direction, 0.0f, 0.0f, 1.0f );
 
     t_sphere * best_sphere = NULL;
     float best_distance = 0.0f;
-    t_vec3 intersect_point;
+    t_vec3 best_intersect_point;
 
     for( int i = 0; i < sphere_count; ++i )
     {
         t_sphere * sphere = &sphere_array[i];
 
+        t_vec3 intersect_point;
         float distance;
         if( !sphere_intersect( ray, sphere, intersect_point, &distance ) )
             continue;
@@ -113,6 +114,7 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
         {
             best_sphere = sphere;
             best_distance = distance;
+            vec3_dup( best_intersect_point, intersect_point );
         }
     }
 
@@ -128,17 +130,42 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
 
         t_vec3 light_vector;
         vec3_dup( light_vector, light->position );
-        vec3_sub( light_vector, intersect_point );
+        vec3_sub( light_vector, best_intersect_point );
+        vec3_normalize( light_vector );
 
         t_vec3 normal;
-        vec3_dup( normal, intersect_point );
+        vec3_dup( normal, best_intersect_point );
         vec3_sub( normal, best_sphere->position );
-
-        vec3_normalize( light_vector );
         vec3_normalize( normal );
 
         float intensity = vec3_dot( normal, light_vector );
         if( intensity < 0 )
+            continue;
+
+        intensity *= light->intensity;
+
+        vec3_dup( ray.start, best_intersect_point );
+        vec3_dup( ray.direction, light->position );
+        vec3_sub( ray.direction, ray.start );
+        vec3_normalize( ray.direction );
+
+        bool unobstructed = true;
+        for( int j = 0; j < sphere_count; ++j )
+        {
+            t_sphere * sphere = &sphere_array[j];
+            if( sphere == best_sphere )
+                continue;
+
+            float distance;
+            t_vec3 point;
+            if( sphere_intersect( ray, sphere, point, &distance ) )
+            {
+                unobstructed = false;
+                break;
+            }
+        }
+
+        if( !unobstructed )
             continue;
 
         t_vec3 light_color;
