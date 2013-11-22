@@ -1,4 +1,7 @@
 #include <SDL2/SDL.h>
+#ifdef main
+#undef main
+#endif
 #include "cudaray.h"
 
 int main( int argc, char * argv[] )
