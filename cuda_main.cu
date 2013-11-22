@@ -142,6 +142,8 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
         vec3_dup( ray.start, best_intersect_point );
         vec3_direction( ray.direction, best_intersect_point, light->position );
 
+        float distance_to_light = vec3_dist( best_intersect_point, light->position );
+
         bool unobstructed = true;
         for( int j = 0; j < sphere_count; ++j )
         {
@@ -151,7 +153,7 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
 
             float distance;
             t_vec3 point;
-            if( sphere_intersect( ray, sphere, point, &distance ) )
+            if( sphere_intersect( ray, sphere, point, &distance ) && distance < distance_to_light )
             {
                 unobstructed = false;
                 break;
