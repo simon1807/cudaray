@@ -99,4 +99,11 @@ PREFIX static inline void vec3_scalar_mul( t_vec3 self, t_vec3 in )
     self[2] *= in[2];
 }
 
+PREFIX static inline void vec3_direction( t_vec3 self, t_vec3 origin, t_vec3 destination )
+{
+    vec3_dup( self, destination );
+    vec3_sub( self, origin );
+    vec3_normalize( self );
+}
+
 #endif
