@@ -57,23 +57,15 @@ static inline float pow2( float x )
 __device__
 static int sphere_intersect( const t_ray ray, const t_sphere * sphere, t_vec3 out, float * out_distance )
 {
-    float xo = ray.start[0];
-    float yo = ray.start[1];
-    float zo = ray.start[2];
-
-    float xs = sphere->position[0];
-    float ys = sphere->position[1];
-    float zs = sphere->position[2];
-
-    float rdx = ray.direction[0];
-    float rdy = ray.direction[1];
-    float rdz = ray.direction[2];
-
     float r = sphere->radius;
 
-    float a = pow2(rdx) + pow2(rdy) + pow2(rdz);
-    float b = 2 * ((xo - xs) * rdx + (yo - ys) * rdy + (zo - zs) * rdz);
-    float c = pow2(xo - xs) + pow2(yo - ys) + pow2(zo - zs) - pow2(r);
+    t_vec3 d;
+    vec3_dup( d, ray.start );
+    vec3_sub( d, sphere->position );
+
+    float a = vec3_dot( ray.direction, ray.direction );
+    float b = 2 * vec3_dot( d, ray.direction );
+    float c = vec3_dot( d, d ) - pow2(r);
     float delta = pow2(b) - 4 * a * c;
 
     if( delta < 0.0f )
@@ -81,7 +73,9 @@ static int sphere_intersect( const t_ray ray, const t_sphere * sphere, t_vec3 ou
 
     float t = (-b + sqrtf( delta )) / (2 * a);
 
-    vec3_set( out, xo + t * rdx, yo + t * rdy, zo + t * rdz );
+    vec3_dup( out, ray.direction );
+    vec3_scale( out, t );
+    vec3_add( out, ray.start );
     *out_distance = vec3_dist( ray.start, out );
 
     return 1;
