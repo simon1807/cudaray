@@ -4,12 +4,28 @@
 #endif
 #include "cudaray.h"
 
+static float rnd()
+{
+    static long a = 3;
+    a = (((a * 214013L + 2531011L) >> 16) & 32767);
+
+    return (((a % 65556) + 1)) / 65556.0f;
+}
+
+struct t_light_aux
+{
+    float r;
+    float xangle;
+    float yangle;
+    float speed;
+};
+
 int main( int argc, char * argv[] )
 {
     SDL_Init( SDL_INIT_VIDEO );
 
-    static const int width = 200;
-    static const int height = 200;
+    static const int width = 800;
+    static const int height = 800;
 
     SDL_Window * window;
     SDL_Renderer * renderer;
@@ -18,21 +34,53 @@ int main( int argc, char * argv[] )
 
     SDL_RenderSetLogicalSize( renderer, width, height );
 
-    t_sphere sphere;
-    vec3_set( sphere.position, 100.0f, 75.0, 0.0f );
-    vec3_set( sphere.color, 1.0f, 1.0f, 1.0f );
-    sphere.radius = 50.0f;
+    const size_t n_spheres = 2;
+    t_sphere * spheres = (t_sphere *)calloc( n_spheres, sizeof( t_sphere ) );
+    for( int i = 0; i < n_spheres; ++i )
+    {
+        t_sphere * sphere = spheres + i;
 
-    const float light_distance = 30.0f;
+        vec3_set( sphere->position, width / 2.0f, height / 2.0f, 0.0f );
+        vec3_set( sphere->color, 1.0f, 1.0f, 1.0f );
 
-    t_vec3 shift;
-    t_light lights[4];
-    vec3_set( lights[0].color, 1.0f, 0.25f, 0.25f );
-    vec3_set( lights[1].color, 0.25f, 0.25f, 1.0f );
-    vec3_set( lights[2].color, 0.25f, 1.0f, 0.25f );
-    vec3_set( lights[3].color, 0.25f, 0.25f, 0.25f );
+        t_vec3 extra;
+        vec3_set( extra, rnd() * 100.0f, rnd() * 100.0f, rnd() * 100.0f );
+        vec3_add( sphere->position, extra );
+        sphere->radius = 50.0f + rnd() * 25.0f;
+    }
 
-    int n_lights = sizeof( lights ) / sizeof( t_light );
+    const size_t n_lights = 1;
+    t_light * lights = (t_light *)calloc( n_lights, sizeof( t_light ) );
+    t_light_aux * lights_aux = ( t_light_aux * )calloc( n_lights, sizeof( t_light_aux ) );
+    for( int i = 1; i < n_lights; ++i )
+    {
+        t_light * light = lights + i;
+        t_light_aux * aux = lights_aux + i;
+
+        light->intensity = 0.25f + rnd();
+        if( light->intensity > 1.0f )
+            light->intensity = 1.0f;
+
+        vec3_set( light->color, rnd() + 0.25f, rnd() + 0.25f, rnd() + 0.25f );
+        vec3_clamp( light->color, 0.0f, 1.0f );
+
+        aux->r = 50.0f + rnd() * 200.0f;
+        aux->xangle = rnd() * 3.14;
+        aux->yangle = rnd() * 3.14;
+        aux->speed = rnd() * 4.0f;
+    }
+
+    vec3_set( spheres[1].position, width / 2.0f, height / 2.0f, 0.0f );
+    spheres[1].radius = 100.0f;
+    vec3_set( spheres[0].position, width / 2.0f + 50.0f, height / 2.0f, 300.0f );
+    spheres[0].radius = 50.0f;
+
+    spheres[0].color[1] = 0.0f;
+    spheres[0].color[2] = 0.0f;
+
+    lights[0].intensity = 1.0f;
+    vec3_set( lights[0].color, 1.0f, 1.0f, 1.0f );
+    vec3_set( lights[0].position, width / 2.0f, height / 2.0f, 500.0f );
 
     uint32_t img[ width ][ height ];
     memset( &img, 0, sizeof( img ) );
@@ -80,28 +128,35 @@ int main( int argc, char * argv[] )
             }
         }
 
-        for( int i = 0; i < n_lights; ++i )
-            vec3_dup( lights[i].position, sphere.position );
-
-        vec3_set( shift, (sphere.radius + light_distance) * cosf(t), 0.0f, (sphere.radius + light_distance) * sinf(t) );
+        vec3_set( lights[0].position, width / 2.0f, height / 2.0f, 300.0f );
+        t_vec3 shift;
+        vec3_set( shift, (150.0f) * cosf(t), 0.0f, (150.0f) * sinf(t) );
         vec3_add( lights[0].position, shift );
 
-        vec3_set( shift, 0.0f, (sphere.radius + light_distance) * cosf(t), (sphere.radius + light_distance) * sinf(t) );
-        vec3_add( lights[1].position, shift );
+        for( int i = 1; i < n_lights; ++i )
+        {
+            t_light * light = lights + i;
+            t_light_aux * aux = lights_aux + i;
 
-        vec3_set( shift, (sphere.radius + light_distance) * cosf(t * 0.75f), (sphere.radius + light_distance) * cosf(t * 0.75f), (sphere.radius + light_distance) * sinf(t * 0.75f) );
-        vec3_add( lights[2].position, shift );
+            t_vec3 shift;
+            vec3_set( shift, aux->r * cosf( aux->xangle ) * sin( aux->yangle ), aux->r * sin( aux->xangle ) * cos( aux->yangle ), aux->r * sinf( aux->yangle ) );
 
-        vec3_set( shift, 0.0f, 0.0f, sphere.radius + 200.0f );
-        vec3_add( lights[3].position, shift );
+            vec3_set( light->position, width / 2.0f, height / 2.0f, 0.0f );
+            vec3_add( light->position, shift );
 
-        cuda_main( width, height, (uint32_t *)img, &sphere, 1, lights, n_lights );
+            aux->xangle += speed * aux->speed;
+            aux->yangle += speed * aux->speed;
+        }
+
+        cuda_main( width, height, (uint32_t *)img, spheres, n_spheres, lights, n_lights );
+
+        img[ (int)lights[0].position[1] ][ (int)lights[0].position[0] ] = 0xff00ffff;
 
         SDL_UpdateTexture( texture, NULL, img, width * sizeof( uint32_t ) );
         SDL_RenderClear( renderer );
         SDL_RenderCopy( renderer, texture, NULL, NULL );
         SDL_RenderPresent( renderer );
-        SDL_Delay( 16 );
+        SDL_Delay( 2 );
 
         t += speed;
         speed += acceleration * 0.01f;
