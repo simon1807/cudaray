@@ -71,7 +71,12 @@ static int sphere_intersect( const t_ray ray, const t_sphere * sphere, t_vec3 ou
     if( delta < 0.0f )
         return 0;
 
-    float t = (-b + sqrtf( delta )) / (2 * a);
+    float t;
+
+    if( b > 0 )
+        t = (-b + sqrtf( delta )) / (2 * a);
+    else
+        t = (-b - sqrtf( delta )) / (2 * a);
 
     vec3_dup( out, ray.direction );
     vec3_scale( out, t );
