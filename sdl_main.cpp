@@ -171,8 +171,6 @@ int main( int argc, char * argv[] )
 
         cuda_main( width, height, (uint32_t *)img, spheres, n_spheres, lights, n_lights );
 
-        img[ (int)lights[0].position[1] ][ (int)lights[0].position[0] ] = 0xff00ffff;
-
         SDL_UpdateTexture( texture, NULL, img, width * sizeof( uint32_t ) );
         SDL_RenderClear( renderer );
         SDL_RenderCopy( renderer, texture, NULL, NULL );
