@@ -2,14 +2,13 @@ SELFDIR := $(dir $(lastword $(MAKEFILE_LIST)))
 
 OUTPUT = /tmp/cudaray-build/cudaray
 _OBJS = main.o cuda_main.o
-LDFLAGS =
 
 NVCC = nvcc
 CC = gcc
 CXX = g++
 CFLAGS = -DDEBUG -D_BSD_SOURCE -Wall -Wextra -Wno-unused-parameter -pipe -g3 -O0
 NVCFLAGS = -arch=sm_20 -O0
-LDFLAGS += `OcelotConfig -l`
+LDFLAGS =
 BUILDIR = $(shell dirname $(OUTPUT))
 
 ifeq ($(ENABLE_SDL), 1)
@@ -21,6 +20,8 @@ endif
 ifeq ($(ENABLE_GHETTO_CUDA), 1)
     NVCC = $(CXX)
     NVCFLAGS = $(CFLAGS) -x c++
+else
+    LDFLAGS += -lcudart
 endif
 
 OBJS = $(patsubst %,$(BUILDIR)/%,$(_OBJS))
