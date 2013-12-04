@@ -20,6 +20,14 @@ struct t_light_aux
     float speed;
 };
 
+double time_get()
+{
+    uint64_t time = SDL_GetPerformanceCounter();
+    uint64_t frequency = SDL_GetPerformanceFrequency();
+
+    return ((double)time) / ((double)frequency);
+}
+
 int main( int argc, char * argv[] )
 {
     SDL_Init( SDL_INIT_VIDEO );
@@ -88,6 +96,12 @@ int main( int argc, char * argv[] )
     float t = 0.0f;
     float speed = 0.3f;
     int acceleration = 0;;
+
+    double timestamp = time_get();
+    int frame_counter = 0;
+
+    double average = 0.0f;
+    bool average_initialized = false;
 
     for( ;; )
     {
@@ -160,7 +174,25 @@ int main( int argc, char * argv[] )
 
         t += speed;
         speed += acceleration * 0.01f;
+
+        frame_counter++;
+        if( frame_counter == 10 )
+        {
+            frame_counter = 0;
+            double now = time_get();
+            double time_per_frame = (now - timestamp) / 10.0;
+            timestamp = now;
+
+            printf( "time per frame: %fms\n", time_per_frame * 1000.0 );
+
+            if( !average_initialized )
+                average = time_per_frame;
+            else
+                average = (average + time_per_frame) / 2.0;
+        }
     }
+
+    printf( "average time per frame: %f\n", average );
 
     SDL_DestroyWindow( window );
     SDL_Quit();
