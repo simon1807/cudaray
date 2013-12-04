@@ -199,7 +199,7 @@ int main( int argc, char * argv[] )
         }
     }
 
-    printf( "average time per frame: %f\n", average );
+    printf( "average time per frame: %fms\n", average * 1000.0 );
 
     SDL_DestroyWindow( window );
     SDL_Quit();
