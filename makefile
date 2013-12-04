@@ -17,12 +17,17 @@ ifeq ($(ENABLE_SDL), 1)
     _OBJS = sdl_main.o cuda_main.o
 endif
 
+ifeq ($(ENABLE_OPENMP), 1)
+    CFLAGS += -fopenmp -DHAVE_OPENMP=1
+endif
+
 ifeq ($(ENABLE_GHETTO_CUDA), 1)
     NVCC = $(CXX)
     NVCFLAGS = $(CFLAGS) -x c++
 else
     LDFLAGS += -lcudart
 endif
+
 
 OBJS = $(patsubst %,$(BUILDIR)/%,$(_OBJS))
 

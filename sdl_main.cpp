@@ -4,6 +4,10 @@
 #endif
 #include "cudaray.h"
 
+#ifdef HAVE_OPENMP
+#include <omp.h>
+#endif
+
 static float rnd()
 {
     static long a = 3;
@@ -30,6 +34,11 @@ double time_get()
 
 int main( int argc, char * argv[] )
 {
+    #ifdef HAVE_OPENMP
+    omp_set_dynamic(0);
+    printf( "running with OpenMP (use OMP_NUM_THREADS to change number of threads)\n" );
+    #endif
+
     SDL_Init( SDL_INIT_VIDEO );
 
     static const int width = 800;

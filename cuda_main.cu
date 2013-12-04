@@ -202,6 +202,9 @@ void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, 
 	
         cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count, cuda_light_array, light_count );
     #else
+        #ifdef HAVE_OPENMP
+        #pragma omp parallel for
+        #endif
         for( int y = 0; y < height; ++y )
         {
             for( int x = 0; x < width; ++x )
