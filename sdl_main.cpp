@@ -102,8 +102,9 @@ int main( int argc, char * argv[] )
 
     double average = 0.0f;
     bool average_initialized = false;
+    bool running = true;
 
-    for( ;; )
+    while( running )
     {
         SDL_Event event;
         while( SDL_PollEvent( &event ) )
@@ -114,7 +115,8 @@ int main( int argc, char * argv[] )
                     switch( event.key.keysym.sym )
                     {
                         case SDLK_ESCAPE:
-                            return 0;
+                            running = false;
+                            break;
                         case SDLK_RIGHT:
                             if( !event.key.repeat )
                                 acceleration -= 1;
@@ -140,7 +142,12 @@ int main( int argc, char * argv[] )
                     }
                     break;
             }
+
+            if( !running )
+                break;
         }
+        if( !running )
+            break;
 
         vec3_set( lights[0].position, width / 2.0f, height / 2.0f, 300.0f );
         t_vec3 shift;
