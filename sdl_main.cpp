@@ -3,6 +3,7 @@
 #undef main
 #endif
 #include "cudaray.h"
+#include <vector>
 
 #ifdef HAVE_OPENMP
 #include <omp.h>
@@ -51,19 +52,28 @@ int main( int argc, char * argv[] )
 
     SDL_RenderSetLogicalSize( renderer, width, height );
 
-    const size_t n_spheres = 2;
-    t_sphere * spheres = (t_sphere *)calloc( n_spheres, sizeof( t_sphere ) );
+    std :: vector< t_sphere > spheres;
+
+    const int sphere_columns = 4;
+    const int sphere_rows = 4;
+
+    const int sphere_vertical_stride = height / sphere_rows;
+    const int sphere_horizontal_stride = width / sphere_columns;
+
+    const int n_spheres = sphere_rows * sphere_columns;
+
     for( int i = 0; i < n_spheres; ++i )
     {
-        t_sphere * sphere = spheres + i;
+        t_sphere sphere;
 
-        vec3_set( sphere->position, width / 2.0f, height / 2.0f, 0.0f );
-        vec3_set( sphere->color, 1.0f, 1.0f, 1.0f );
+        int y = i / sphere_columns;
+        int x = i - y * sphere_columns;
 
-        t_vec3 extra;
-        vec3_set( extra, rnd() * 100.0f, rnd() * 100.0f, rnd() * 100.0f );
-        vec3_add( sphere->position, extra );
-        sphere->radius = 50.0f + rnd() * 25.0f;
+        vec3_set( sphere.position, sphere_horizontal_stride * (x + 0.5), sphere_vertical_stride * (y + 0.5), 0.0f );
+        vec3_set( sphere.color, 0.50 + rnd() * 0.50, 0.50 + rnd() * 0.50, 0.50 + rnd() * 0.50 );
+
+        sphere.radius = 50.0f + rnd() * 25.0f;
+        spheres.push_back( sphere );
     }
 
     const size_t n_lights = 1;
@@ -86,14 +96,6 @@ int main( int argc, char * argv[] )
         aux->yangle = rnd() * 3.14;
         aux->speed = rnd() * 4.0f;
     }
-
-    vec3_set( spheres[1].position, width / 2.0f, height / 2.0f, 0.0f );
-    spheres[1].radius = 100.0f;
-    vec3_set( spheres[0].position, width / 2.0f + 50.0f, height / 2.0f, 300.0f );
-    spheres[0].radius = 50.0f;
-
-    spheres[0].color[1] = 0.0f;
-    spheres[0].color[2] = 0.0f;
 
     lights[0].intensity = 1.0f;
     vec3_set( lights[0].color, 1.0f, 1.0f, 1.0f );
@@ -178,7 +180,7 @@ int main( int argc, char * argv[] )
             aux->yangle += speed * aux->speed;
         }
 
-        cuda_main( width, height, (uint32_t *)img, spheres, n_spheres, lights, n_lights );
+        cuda_main( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights );
 
         SDL_UpdateTexture( texture, NULL, img, width * sizeof( uint32_t ) );
         SDL_RenderClear( renderer );
