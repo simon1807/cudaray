@@ -6,8 +6,8 @@ _OBJS = main.o cuda_main.o
 NVCC = nvcc
 CC = gcc
 CXX = g++
-CFLAGS = -DDEBUG -D_BSD_SOURCE -Wall -Wextra -Wno-unused-parameter -pipe -g3 -O0
-NVCFLAGS = -arch=sm_20 -O0
+CFLAGS = -DDEBUG -D_BSD_SOURCE -Wall -Wextra -Wno-unused-parameter -pipe -g3 -O2
+NVCFLAGS = -arch=sm_20 -O2
 LDFLAGS =
 BUILDIR = $(shell dirname $(OUTPUT))
 
