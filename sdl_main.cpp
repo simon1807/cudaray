@@ -40,6 +40,7 @@ int main( int argc, char * argv[] )
     int sphere_columns = 4;
     int sphere_rows = 4;
     bool cpu_mode = false;
+    bool benchmark_mode = false;
 
     for( int i = 1; i < argc; ++i )
     {
@@ -65,6 +66,11 @@ int main( int argc, char * argv[] )
         {
             i++;
             sphere_columns = atoi( argv[i] );
+        }
+        else if( !strcmp( arg, "--benchmark" ) )
+        {
+            benchmark_mode = true;
+            printf( "benchmark mode\n" );
         }
     }
 
@@ -146,8 +152,8 @@ int main( int argc, char * argv[] )
     int frame_counter = 0;
 
     double average = 0.0f;
-    bool average_initialized = false;
     bool running = true;
+    uint32_t average_count = 0;
 
     while( running )
     {
@@ -238,10 +244,15 @@ int main( int argc, char * argv[] )
 
             printf( "time per frame: %fms\n", time_per_frame * 1000.0 );
 
-            if( !average_initialized )
+            if( average_count == 1 )
                 average = time_per_frame;
-            else
+            else if( average_count > 1 )
                 average = (average + time_per_frame) / 2.0;
+
+            if( average_count == 5 && benchmark_mode )
+                break;
+
+            average_count++;
         }
     }
 
