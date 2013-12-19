@@ -39,6 +39,8 @@ int main( int argc, char * argv[] )
     int height = 800;
     int sphere_columns = 4;
     int sphere_rows = 4;
+    int block_width = 32;
+    int block_height = 32;
     bool cpu_mode = false;
     bool benchmark_mode = false;
 
@@ -71,6 +73,16 @@ int main( int argc, char * argv[] )
         {
             benchmark_mode = true;
             printf( "benchmark mode\n" );
+        }
+        else if( !strcmp( arg, "--block-width" ) )
+        {
+            i++;
+            block_width = atoi( argv[i] );
+        }
+        else if( !strcmp( arg, "--block-height" ) )
+        {
+            i++;
+            block_height = atoi( argv[i] );
         }
     }
 
@@ -221,9 +233,9 @@ int main( int argc, char * argv[] )
         }
 
         if( cpu_mode )
-            cuda_main_cpu( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights );
+            cuda_main_cpu( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights, 0, 0 );
         else
-            cuda_main( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights );
+            cuda_main( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights, block_width, block_height );
 
         SDL_UpdateTexture( texture, NULL, img, width * sizeof( uint32_t ) );
         SDL_RenderClear( renderer );

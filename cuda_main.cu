@@ -194,7 +194,7 @@ cuda_main
 #else
 cuda_main_cpu
 #endif
-( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
+( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count, int block_width, int block_height )
 {
     uint32_t * cuda_img;
     t_sphere * cuda_sphere_array;
@@ -209,8 +209,8 @@ cuda_main_cpu
     cudaMemcpy( cuda_light_array, light_array, light_count * sizeof( t_light ), cudaMemcpyHostToDevice );
 
     #ifdef __CUDACC__
-        dim3 dimBlock( 32, 32 );
-        dim3 dimGrid( width / 32, height / 32 );
+        dim3 dimBlock( block_width, block_height );
+        dim3 dimGrid( width / block_width, height / block_height );
 	
         cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count, cuda_light_array, light_count );
     #else

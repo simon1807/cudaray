@@ -11,7 +11,7 @@ struct t_light
     float intensity;
 };
 
-void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count );
-void cuda_main_cpu( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count );
+void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count, int block_width, int block_height );
+void cuda_main_cpu( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count, int block_width, int block_height );
 
 #endif
