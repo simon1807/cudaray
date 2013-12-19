@@ -124,7 +124,7 @@ int main( int argc, char * argv[] )
         vec3_set( sphere.position, sphere_horizontal_stride * (x + 0.5), sphere_vertical_stride * (y + 0.5), 0.0f );
         vec3_set( sphere.color, 0.50 + rnd() * 0.50, 0.50 + rnd() * 0.50, 0.50 + rnd() * 0.50 );
 
-        sphere.radius = 50.0f + rnd() * 25.0f;
+        sphere.radius = sphere_horizontal_stride / 3.0f + (rnd() - 0.5f) * 2.0f * sphere_horizontal_stride / 8.0f;
         spheres.push_back( sphere );
     }
 
