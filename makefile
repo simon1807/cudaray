@@ -7,7 +7,7 @@ NVCC = nvcc
 CC = gcc
 CXX = g++
 CFLAGS = -DDEBUG -D_BSD_SOURCE -Wall -Wextra -Wno-unused-parameter -pipe -g3 -O2
-NVCFLAGS = -arch=sm_20 -O2
+NVCFLAGS = -arch=sm_30 -O2 --use_fast_math --restrict
 LDFLAGS =
 BUILDIR = $(shell dirname $(OUTPUT))
 
