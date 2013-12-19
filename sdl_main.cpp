@@ -35,6 +35,8 @@ double time_get()
 
 int main( int argc, char * argv[] )
 {
+    int width = 800;
+    int height = 800;
     bool cpu_mode = false;
 
     for( int i = 1; i < argc; ++i )
@@ -42,6 +44,16 @@ int main( int argc, char * argv[] )
         char * arg = argv[i];
         if( !strcmp( arg, "--cpu" ) )
             cpu_mode = true;
+        else if( !strcmp( arg, "--width" ) )
+        {
+            i++;
+            width = atoi( argv[i] );
+        }
+        else if( !strcmp( arg, "--height" ) )
+        {
+            i++;
+            height = atoi( argv[i] );
+        }
     }
 
     if( cpu_mode )
@@ -57,9 +69,6 @@ int main( int argc, char * argv[] )
         printf( "running on the GPU\n" );
 
     SDL_Init( SDL_INIT_VIDEO );
-
-    static const int width = 800;
-    static const int height = 800;
 
     SDL_Window * window;
     SDL_Renderer * renderer;
