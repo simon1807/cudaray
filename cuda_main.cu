@@ -6,7 +6,7 @@
 
 #ifndef __CUDACC__ /* Ghetto CUDA. */
     #define __device__
-    #define __global__
+    #define __global__ static
 
     #include <stdlib.h>
     #include <string.h>
@@ -181,8 +181,14 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
     int b = 255 * fragment_color[2];
     img[ y * width + x ] += 0xff000000 | (r << 16) | (g << 8) | (b);
 }
- 
-void cuda_main( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
+
+void
+#ifdef __CUDACC__
+cuda_main
+#else
+cuda_main_cpu
+#endif
+( int width, int height, uint32_t * img, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
 {
     uint32_t * cuda_img;
     t_sphere * cuda_sphere_array;

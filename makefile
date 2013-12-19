@@ -25,6 +25,7 @@ ifeq ($(ENABLE_GHETTO_CUDA), 1)
     NVCC = $(CXX)
     NVCFLAGS = $(CFLAGS) -x c++
 else
+    _OBJS += cuda_main_cpu.o
     LDFLAGS += -lcudart
 endif
 

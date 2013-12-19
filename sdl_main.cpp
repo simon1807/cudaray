@@ -35,10 +35,26 @@ double time_get()
 
 int main( int argc, char * argv[] )
 {
-    #ifdef HAVE_OPENMP
-    omp_set_dynamic(0);
-    printf( "running with OpenMP (use OMP_NUM_THREADS to change number of threads)\n" );
-    #endif
+    bool cpu_mode = false;
+
+    for( int i = 1; i < argc; ++i )
+    {
+        char * arg = argv[i];
+        if( !strcmp( arg, "--cpu" ) )
+            cpu_mode = true;
+    }
+
+    if( cpu_mode )
+    {
+        #ifdef HAVE_OPENMP
+        omp_set_dynamic(0);
+        printf( "running with OpenMP (use OMP_NUM_THREADS to change number of threads)\n" );
+        #else
+        printf( "running on the CPU\n" );
+        #endif
+    }
+    else
+        printf( "running on the GPU\n" );
 
     SDL_Init( SDL_INIT_VIDEO );
 
@@ -180,7 +196,10 @@ int main( int argc, char * argv[] )
             aux->yangle += speed * aux->speed;
         }
 
-        cuda_main( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights );
+        if( cpu_mode )
+            cuda_main_cpu( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights );
+        else
+            cuda_main( width, height, (uint32_t *)img, &spheres.front(), spheres.size(), lights, n_lights );
 
         SDL_UpdateTexture( texture, NULL, img, width * sizeof( uint32_t ) );
         SDL_RenderClear( renderer );
