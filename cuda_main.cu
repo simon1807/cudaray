@@ -89,8 +89,13 @@ static int sphere_intersect( const t_ray ray, const t_sphere * sphere, t_vec3 ou
 __global__ 
 void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_count, t_light * light_array, int light_count )
 {
-	int x = blockIdx.x;
-	int y = blockIdx.y;
+#ifndef __CUDACC__
+    int x = blockIdx.x;
+    int y = blockIdx.y;
+#else
+	int x = blockIdx.x * blockDim.x + threadIdx.x;
+	int y = blockIdx.y * blockDim.y + threadIdx.y;
+#endif
 
     t_ray ray;
     vec3_set( ray.start, x, y, 1000.0f );
@@ -145,6 +150,7 @@ void cuda_run( uint32_t * img, int width, t_sphere * sphere_array, int sphere_co
         float distance_to_light = vec3_dist( best_intersect_point, light->position );
 
         bool unobstructed = true;
+
         for( int j = 0; j < sphere_count; ++j )
         {
             t_sphere * sphere = &sphere_array[j];
@@ -203,8 +209,8 @@ cuda_main_cpu
     cudaMemcpy( cuda_light_array, light_array, light_count * sizeof( t_light ), cudaMemcpyHostToDevice );
 
     #ifdef __CUDACC__
-        dim3 dimBlock( 1, 1 );
-        dim3 dimGrid( width, height );
+        dim3 dimBlock( 32, 32 );
+        dim3 dimGrid( width / 32, height / 32 );
 	
         cuda_run<<<dimGrid, dimBlock>>>( cuda_img, width, cuda_sphere_array, sphere_count, cuda_light_array, light_count );
     #else
