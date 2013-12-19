@@ -37,6 +37,8 @@ int main( int argc, char * argv[] )
 {
     int width = 800;
     int height = 800;
+    int sphere_columns = 4;
+    int sphere_rows = 4;
     bool cpu_mode = false;
 
     for( int i = 1; i < argc; ++i )
@@ -53,6 +55,16 @@ int main( int argc, char * argv[] )
         {
             i++;
             height = atoi( argv[i] );
+        }
+        else if( !strcmp( arg, "--rows" ) )
+        {
+            i++;
+            sphere_rows = atoi( argv[i] );
+        }
+        else if( !strcmp( arg, "--columns" ) )
+        {
+            i++;
+            sphere_columns = atoi( argv[i] );
         }
     }
 
@@ -78,9 +90,6 @@ int main( int argc, char * argv[] )
     SDL_RenderSetLogicalSize( renderer, width, height );
 
     std :: vector< t_sphere > spheres;
-
-    const int sphere_columns = 4;
-    const int sphere_rows = 4;
 
     const int sphere_vertical_stride = height / sphere_rows;
     const int sphere_horizontal_stride = width / sphere_columns;
