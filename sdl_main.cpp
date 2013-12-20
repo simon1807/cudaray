@@ -153,7 +153,7 @@ int main( int argc, char * argv[] )
     vec3_set( lights[0].color, 1.0f, 1.0f, 1.0f );
     vec3_set( lights[0].position, width / 2.0f, height / 2.0f, 500.0f );
 
-    uint32_t img[ width ][ height ];
+    uint32_t * img = (uint32_t *)malloc( width * height * sizeof( uint32_t ) );
     memset( &img, 0, sizeof( img ) );
 
     float t = 0.0f;
